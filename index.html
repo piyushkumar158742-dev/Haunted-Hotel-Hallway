@@ -987,11 +987,9 @@
     let radius = 180;
 
     const grad = ctx.createRadialGradient(drawX, drawY, 15, drawX, drawY, radius);
-
-    const grad = ctx.createRadialGradient(drawX, drawY, 15, drawX, drawY, radius);
     grad.addColorStop(0, 'rgba(0,0,0,0)');
     
-    // Day 3 Red Tint
+    // Day 3 Red Tint (Kept this in case you still want it, but the size won't shrink!)
     if(level.day === 3) {
       grad.addColorStop(0.5, 'rgba(15,0,0,0.6)');
     } else {
@@ -1020,7 +1018,6 @@
       ctx.fillRect(nx, ny, nw, nh);
     }
   }
-
   /* ---------------------------------------------------------- */
   /* main loop                                                  */
   /* ---------------------------------------------------------- */
