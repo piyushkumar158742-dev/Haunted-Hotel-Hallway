@@ -278,7 +278,7 @@
   const GRAVITY = 0.38;
   const JUMP_V = -7.2;
   const MOVE_SPEED = 2.2;
-  const PLAYER_HW = 6;
+  const PLAYER_HW = 9;
   const ROOMS_PER_FLOOR = 6;
   const ELEVATOR_ZONE = 220;
   const END_ZONE = 220;
@@ -885,7 +885,14 @@
   function drawPlayer(){
     ctx.save();
     ctx.translate(player.x, player.y);
-    if(player.facing < 0) ctx.scale(-1,1);
+    
+    // Scale the player up by 1.5x! (Change this number if you want them even bigger)
+    const pScale = 1.5; 
+    if(player.facing < 0) {
+      ctx.scale(-pScale, pScale);
+    } else {
+      ctx.scale(pScale, pScale);
+    }
 
     let t = player.animTimer;
     let isMoving = player.moving && player.onGround;
