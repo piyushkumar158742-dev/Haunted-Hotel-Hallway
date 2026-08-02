@@ -845,14 +845,19 @@
     
     ctx.fillStyle = '#0f0d0c';
     ctx.fillRect(door.x - w/2, topY, w, h);
-    ctx.fillStyle = '#1a1613'; 
+    
+    // Changed this from '#1a1613' to match the main door color
+    ctx.fillStyle = '#0f0d0c'; 
     ctx.fillRect(door.x - w/2, topY, w, 4); 
+    
     ctx.fillStyle = '#42382a'; 
     ctx.fillRect(door.x + w/2 - 8, topY + h/2, 3, 4); 
     
     ctx.fillStyle = '#000';
     ctx.fillRect(door.x - 10, topY - 12, 20, 8);
-    ctx.fillStyle = '#555';
+    
+    // Changed text color from '#555' to '#ccc' to make it readable
+    ctx.fillStyle = '#ccc';
     ctx.font = '6px monospace';
     ctx.textAlign = 'center';
     ctx.fillText(String(door.roomNumber), door.x, topY - 5);
