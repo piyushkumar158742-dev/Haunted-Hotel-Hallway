@@ -975,10 +975,10 @@
     const drawX = player.x - Math.max(0, Math.min(level.length-VW, player.x - VW/2));
     const drawY = player.y - 20;
 
-    // Flashlight radius significantly shrinks by Day
+    // Flashlight radius stays consistent across all days
     let radius = 180;
-    if(level.day === 2) radius = 90;
-    if(level.day === 3) radius = 45; 
+
+    const grad = ctx.createRadialGradient(drawX, drawY, 15, drawX, drawY, radius);
 
     const grad = ctx.createRadialGradient(drawX, drawY, 15, drawX, drawY, radius);
     grad.addColorStop(0, 'rgba(0,0,0,0)');
