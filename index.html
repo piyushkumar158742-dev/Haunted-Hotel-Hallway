@@ -275,10 +275,8 @@
   /* ---------------------------------------------------------- */
   const VW = 384, VH = 216;
   const GROUND_Y = 160;
-  const GRAVITY = 0.38;
-  const JUMP_V = -7.2;
   const MOVE_SPEED = 2.2;
-  const PLAYER_HW = 9;
+  const PLAYER_HW = 9; // Increased hitbox for larger player
   const ROOMS_PER_FLOOR = 6;
   const ELEVATOR_ZONE = 220;
   const END_ZONE = 220;
@@ -295,15 +293,15 @@
   let state = 'start'; // start | intro | playing | form | complete | death
   
   // Progress trackers
-  let currentDay = 1;   // 1 to 3
-  let currentFloor = 1; // 1 to 5
+  let currentDay = 1;   // 1 to 5
+  let currentFloor = 1; // 1 to 3
   let savedInspectorName = "";
   
   let level = null;
   let reachedEnd = false;
   let flashAlpha = 0;
   
-  let cheatDayBuffer = null; // Stores T/Y/I press for warp
+  let cheatDayBuffer = null; // Stores 1-5 press for warp
 
   const keys = { left:false, right:false };
 
@@ -323,12 +321,10 @@
   function generateLevel(day, floor){
     let activeAnomalies = [];
     
-    // Scale difficulty/creepiness
     // Scale difficulty/creepiness for 5 days / 3 floors
-    let creepFactor = (day - 1) * 0.25 + (floor / 3) * 0.3;
+    let creepFactor = (day - 1) * 0.25 + (floor / 3) * 0.3; 
     let maxAnomalies = Math.min(3, Math.floor(1 + creepFactor * 2));
     
-    // Determine number of anomalies for this run
     let anomalyCount = 0;
     
     if (day === 2) {
@@ -344,7 +340,6 @@
 
     let available = [...POSSIBLE_ANOMALIES];
     
-    // SPECIAL REQUIREMENT: 3% chance for blood on Day 1 Floor 1
     if(day === 1 && floor === 1) {
         anomalyCount = 0; // Base is clear
         if(Math.random() < 0.03) {
@@ -353,7 +348,6 @@
             available = available.filter(a => a !== "Blood Stains");
         }
     } else {
-        // Normal generation for other floors
         for(let i=0; i<anomalyCount; i++) {
             if(available.length === 0) break;
             let choice = available.splice(Math.floor(Math.random()*available.length), 1)[0];
@@ -382,7 +376,6 @@
     return newLevel;
   }
 
-  // Applies physical anomalies onto a level object
   function applyAnomaliesToLevel(lvl, activeAnomalies) {
     lvl.actualAnomalies = activeAnomalies;
     
@@ -444,10 +437,10 @@
     level = generateLevel(day, floor);
     
     player.x = 60; player.y = GROUND_Y; player.vx = 0; player.vy = 0;
-    player.onGround = true; player.facing = 1; player.moving = false;
-    player.animTimer = 0; player.idleTimer = 0;
+    player.facing = 1; player.moving = false;
+    player.frameX = 0; player.frameY = 0; player.frameTimer = 0;
     reachedEnd = false;
-    keys.left = keys.right = keys.jump = false;
+    keys.left = keys.right = false;
     cheatDayBuffer = null;
     
     showFloorIntro();
@@ -476,11 +469,10 @@
 
   function openFormModal(){
     state = 'form';
-    keys.left = keys.right = keys.jump = false;
+    keys.left = keys.right = false;
     
     document.getElementById('formFloorLabel').textContent = `LOCATION: HOLLOW CREST - NIGHT ${currentDay}, FLOOR ${currentFloor}`;
     
-    // Setup inputs
     const nameInput = document.getElementById('inspectorName');
     nameInput.value = savedInspectorName;
     document.getElementById('anomalyCount').value = "";
@@ -561,40 +553,6 @@
     
     if(state === 'intro'){ closeIntro(); return; }
     
-    // Dev Cheats
-    if (!cheatDayBuffer && e.key >= '1' && e.key <= '5') {
-        cheatDayBuffer = parseInt(e.key);
-        showToast(`Warp: Night ${cheatDayBuffer} selected. Press 1-3 for Floor.`, 2000);
-        return;
-    } else if (cheatDayBuffer && e.key >= '1' && e.key <= '3') {
-        document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
-        startFloor(cheatDayBuffer, parseInt(e.key));
-        cheatDayBuffer = null; 
-        return;
-    } else if (cheatDayBuffer) {
-        cheatDayBuffer = null;
-    }
-
-    if(state !== 'playing') return;
-    switch(e.code){
-      case 'ArrowLeft': case 'KeyA': keys.left = true; break;
-      case 'ArrowRight': case 'KeyD': keys.right = true; break;
-    }
-  });
-  
-  window.addEventListener('keyup', function(e){
-    if(e.target.tagName === 'INPUT') return;
-    switch(e.code){
-      case 'ArrowLeft': case 'KeyA': keys.left = false; break;
-      case 'ArrowRight': case 'KeyD': keys.right = false; break;
-    }
-  });
-    if(e.target.tagName === 'INPUT') return;
-    if(MOVE_CODES.indexOf(e.code) !== -1) e.preventDefault();
-    
-    // Close intro screen on key press
-    if(state === 'intro'){ closeIntro(); return; }
-    
     // Dev Cheats: First press 1-5 for Night, then 1-3 for Floor
     if (!cheatDayBuffer && e.key >= '1' && e.key <= '5') {
         cheatDayBuffer = parseInt(e.key);
@@ -610,13 +568,10 @@
         cheatDayBuffer = null;
     }
 
-    // Stop reading movement keys if not actively playing
     if(state !== 'playing') return;
-    
     switch(e.code){
       case 'ArrowLeft': case 'KeyA': keys.left = true; break;
       case 'ArrowRight': case 'KeyD': keys.right = true; break;
-      case 'ArrowUp': case 'Space': case 'KeyW': keys.jump = true; break;
     }
   });
   
@@ -625,11 +580,9 @@
     switch(e.code){
       case 'ArrowLeft': case 'KeyA': keys.left = false; break;
       case 'ArrowRight': case 'KeyD': keys.right = false; break;
-      case 'ArrowUp': case 'Space': case 'KeyW': keys.jump = false; break;
     }
   });
 
-  // Checkbox logic inside the form
   document.querySelectorAll('#anomalyTypesList input[type="checkbox"]').forEach(chk => {
     chk.addEventListener('change', (e) => {
       if(e.target.value === "Clear" && e.target.checked){
@@ -654,7 +607,7 @@
   /* ---------------------------------------------------------- */
   /* update logic                                               */
   /* ---------------------------------------------------------- */
-function update(dt){
+  function update(dt){
     // Movement Physics (No Jump)
     if(keys.left && !keys.right){ player.vx = -MOVE_SPEED; player.facing = -1; player.moving = true; }
     else if(keys.right && !keys.left){ player.vx = MOVE_SPEED; player.facing = 1; player.moving = true; }
@@ -719,6 +672,11 @@ function update(dt){
     }
     flashAlpha *= Math.pow(0.85, dt);
   }
+
+  /* ---------------------------------------------------------- */
+  /* rendering                                                  */
+  /* ---------------------------------------------------------- */
+  function drawScene(camX){
     // Background scaling based on creepFactor
     let dayDarkness = Math.min(60, level.creepFactor * 30);
     
@@ -756,21 +714,17 @@ function update(dt){
     // Beautiful/Gruesome Blood Stains
     if(level.bloodSplats) {
       level.bloodSplats.forEach(s => {
-        // Base dark splat
         ctx.fillStyle = s.darkness > 0.5 ? '#360000' : '#4a0000';
         ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
         
-        // Inner bright splat for depth
         ctx.fillStyle = '#7a0505';
         ctx.beginPath(); ctx.arc(s.x - 1, s.y - 1, s.r * 0.5, 0, Math.PI*2); ctx.fill();
 
-        // Drip line down wall
         let dripEnd = Math.min(s.y + s.dripLen, GROUND_Y);
         let dripWidth = Math.max(1, s.r * 0.4);
         ctx.fillStyle = '#4a0000';
         ctx.fillRect(s.x - dripWidth/2, s.y + s.r - 1, dripWidth, dripEnd - (s.y + s.r));
         
-        // Pool at bottom if drip reaches floor precisely at GROUND_Y
         if(dripEnd >= GROUND_Y) {
            ctx.fillStyle = '#360000';
            ctx.fillRect(s.x - s.r, GROUND_Y - 2, s.r*2, 2); 
@@ -871,7 +825,7 @@ function update(dt){
     ctx.fillStyle = '#42382a'; 
     ctx.fillRect(door.x + w/2 - 8, topY + h/2, 3, 4); 
     
-    // Room number plaque background (sits perfectly on top of the new frame)
+    // Room number plaque background
     ctx.fillStyle = '#000';
     ctx.fillRect(door.x - 10, topY - 12, 20, 8);
     
@@ -896,11 +850,9 @@ function update(dt){
 
   function drawPlayer(){
     ctx.save();
-    
-    // Anchor to the player's position
     ctx.translate(player.x, player.y);
     
-    // Scale the player (Adjust the 1.5 if you want them bigger/smaller)
+    // Scale the player up by 1.5x
     const pScale = 1.5; 
     if(player.facing < 0) {
       ctx.scale(-pScale, pScale);
@@ -930,66 +882,7 @@ function update(dt){
     ctx.restore();
   }
 
-    // ----- BACK LEG -----
-    ctx.save();
-    ctx.translate(0, -10); // Leg anchor point
-    if(isRising) { ctx.rotate(0.4); } 
-    else if(isFalling) { ctx.rotate(0.2); } 
-    else { ctx.rotate(isMoving ? Math.sin(t + Math.PI) * 0.8 : -0.1); }
-    
-    ctx.fillStyle = '#0a0a0b';
-    ctx.fillRect(-2, 0, 4, 10);
-    ctx.restore();
-
-    // ----- FRONT LEG -----
-    ctx.save();
-    ctx.translate(0, -10); 
-    if(isRising) { ctx.rotate(-0.5); } 
-    else if(isFalling) { ctx.rotate(-0.2); } 
-    else { ctx.rotate(isMoving ? Math.sin(t) * 0.8 : 0.1); }
-    
-    ctx.fillStyle = '#141517';
-    ctx.fillRect(-2, 0, 4, 10);
-    ctx.restore();
-
-    // Torso (Trench coat body)
-    ctx.fillStyle = '#222328';
-    ctx.fillRect(-5, -24, 10, 14);
-    
-    // Undershirt & Red Tie
-    ctx.fillStyle = '#c5c5c8';
-    ctx.fillRect(-1, -24, 4, 6);
-    ctx.fillStyle = '#7a0505';
-    ctx.fillRect(0, -22, 2, 6);
-
-    // Head
-    ctx.fillStyle = '#dcbda5'; 
-    ctx.fillRect(-4, -32, 8, 8);
-    
-    // Hair
-    ctx.fillStyle = '#1c1611'; 
-    ctx.fillRect(-5, -34, 10, 3); 
-    ctx.fillRect(-5, -32, 3, 4); 
-
-    // Eye
-    ctx.fillStyle = '#050505';
-    ctx.fillRect(1, -30, 2, 2);
-
-    // ----- FRONT ARM -----
-    ctx.save();
-    ctx.translate(-2, -20);
-    if(isRising) { ctx.rotate(-0.5); } 
-    else if(isFalling) { ctx.rotate(-0.8); } 
-    else { ctx.rotate(isMoving ? Math.sin(t) * 0.6 : 0); }
-    
-    ctx.fillStyle = '#222328';
-    ctx.fillRect(-2, 0, 4, 10);
-    ctx.restore();
-
-    ctx.restore();
-  }
-
- function drawOverlay(){
+  function drawOverlay(){
     const drawX = player.x - Math.max(0, Math.min(level.length-VW, player.x - VW/2));
     const drawY = player.y - 20;
 
@@ -1029,6 +922,7 @@ function update(dt){
       ctx.fillRect(nx, ny, nw, nh);
     }
   }
+
   /* ---------------------------------------------------------- */
   /* main loop                                                  */
   /* ---------------------------------------------------------- */
