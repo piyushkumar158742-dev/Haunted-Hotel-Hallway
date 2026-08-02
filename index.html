@@ -181,7 +181,7 @@
       <div id="toastContainer"></div>
       <div class="hud-bottom">
         <div id="controlsHint">← → / A D MOVE &nbsp; SPACE JUMP</div>
-        <div id="devHint">DEV: T(Night 1), Y(Night 2), I(Night 3) + 1-5(Floor)</div>
+        <div id="devHint">DEV: Press 1-5(Night) then 1-3(Floor) to warp</div>
       </div>
     </div>
 
@@ -245,7 +245,7 @@
     <div class="overlay hidden" id="completeScreen">
       <div class="overlay-inner">
         <h1 class="title" style="text-align:center;">CONTRACT FULFILLED</h1>
-        <p class="flavor" style="text-align:center;">You survived three nights. Your observations were flawless.</p>
+        <p class="flavor" style="text-align:center;">You survived five nights. Your observations were flawless.</p>
         <div style="text-align:center; margin-top:20px;">
           <button class="sys-btn" id="restartBtn">CLOCK OUT</button>
         </div>
@@ -318,7 +318,8 @@
     let activeAnomalies = [];
     
     // Scale difficulty/creepiness
-    let creepFactor = (day - 1) * 0.4 + (floor / 5) * 0.3; 
+    // Scale difficulty/creepiness for 5 days / 3 floors
+    let creepFactor = (day - 1) * 0.25 + (floor / 3) * 0.3;
     let maxAnomalies = Math.min(3, Math.floor(1 + creepFactor * 2));
     
     // Determine number of anomalies for this run
@@ -514,12 +515,12 @@
       let nextFloor = currentFloor + 1;
       let nextDay = currentDay;
       
-      if(nextFloor > 5) {
+      if(nextFloor > 3) {
           nextFloor = 1;
           nextDay++;
       }
       
-      if(nextDay > 3){ 
+      if(nextDay > 5){ 
         showComplete();
       } else {
         startFloor(nextDay, nextFloor);
@@ -554,14 +555,19 @@
     
     if(state === 'intro'){ closeIntro(); return; }
     
-    // Dev Cheats
-    if(e.code === 'KeyT') cheatDayBuffer = 1;
-    if(e.code === 'KeyY') cheatDayBuffer = 2;
-    if(e.code === 'KeyI') cheatDayBuffer = 3;
-    if(cheatDayBuffer && e.key >= '1' && e.key <= '5') {
+   // Dev Cheats: First press 1-5 for Night, then 1-3 for Floor
+    if (!cheatDayBuffer && e.key >= '1' && e.key <= '5') {
+        cheatDayBuffer = parseInt(e.key);
+        showToast(`Warp: Night ${cheatDayBuffer} selected. Press 1-3 for Floor.`, 2000);
+        return;
+    } else if (cheatDayBuffer && e.key >= '1' && e.key <= '3') {
         document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
         startFloor(cheatDayBuffer, parseInt(e.key));
+        cheatDayBuffer = null; // reset buffer after warping
         return;
+    } else if (cheatDayBuffer) {
+        // If they press any other key, cancel the cheat sequence
+        cheatDayBuffer = null;
     }
 
     if(state !== 'playing') return;
