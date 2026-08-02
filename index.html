@@ -306,9 +306,9 @@
 
   const keys = { left:false, right:false };
 
-  // Load the new sprite sheet
+  // Load the new sprite sheet (Fixed path for GitHub Pages)
   const playerImg = new Image();
-  playerImg.src = 'normal_2.jpg';
+  playerImg.src = './normal_2.png';
 
   // Updated player object for sprite animation (removed jump variables)
   const player = { 
@@ -826,6 +826,7 @@
       ctx.scale(pScale, pScale);
     }
 
+    // If image loads properly, draw the sprite
     if(playerImg.complete && playerImg.naturalWidth > 0) {
       const frameW = playerImg.width / 8;
       const frameH = playerImg.height / 2;
@@ -837,6 +838,28 @@
         -frameW / 2, -frameH,                           
         frameW, frameH                                  
       );
+    } else {
+      // SMART FALLBACK: If image fails, draw procedural character (NO MORE PINK BOX!)
+      let t = player.frameTimer * 10;
+      let walkBob = player.moving ? Math.abs(Math.sin(t)) * 1.5 : 0;
+      ctx.translate(0, -walkBob);
+
+      ctx.fillStyle = '#141517'; 
+      if(player.moving) { ctx.fillRect(-10 - Math.sin(t)*2, -16, 8, 6); } 
+      else { ctx.fillRect(-8, -14, 6, 8); }
+
+      ctx.save(); ctx.translate(2, -20); ctx.rotate(player.moving ? Math.sin(t + Math.PI) * 0.6 : 0); ctx.fillStyle = '#111214'; ctx.fillRect(-2, 0, 4, 10); ctx.restore();
+      ctx.save(); ctx.translate(0, -10); ctx.rotate(player.moving ? Math.sin(t + Math.PI) * 0.8 : -0.1); ctx.fillStyle = '#0a0a0b'; ctx.fillRect(-2, 0, 4, 10); ctx.restore();
+      ctx.save(); ctx.translate(0, -10); ctx.rotate(player.moving ? Math.sin(t) * 0.8 : 0.1); ctx.fillStyle = '#141517'; ctx.fillRect(-2, 0, 4, 10); ctx.restore();
+
+      ctx.fillStyle = '#222328'; ctx.fillRect(-5, -24, 10, 14);
+      ctx.fillStyle = '#c5c5c8'; ctx.fillRect(-1, -24, 4, 6);
+      ctx.fillStyle = '#7a0505'; ctx.fillRect(0, -22, 2, 6);
+      ctx.fillStyle = '#dcbda5'; ctx.fillRect(-4, -32, 8, 8);
+      ctx.fillStyle = '#1c1611'; ctx.fillRect(-5, -34, 10, 3); ctx.fillRect(-5, -32, 3, 4); 
+      ctx.fillStyle = '#050505'; ctx.fillRect(1, -30, 2, 2);
+
+      ctx.save(); ctx.translate(-2, -20); ctx.rotate(player.moving ? Math.sin(t) * 0.6 : 0); ctx.fillStyle = '#222328'; ctx.fillRect(-2, 0, 4, 10); ctx.restore();
     }
 
     ctx.restore();
