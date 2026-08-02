@@ -553,11 +553,9 @@
     if(e.target.tagName === 'INPUT') return;
     if(MOVE_CODES.indexOf(e.code) !== -1) e.preventDefault();
     
+    // Close intro screen on key press
     if(state === 'intro'){ closeIntro(); return; }
     
-   // Restored intro close handler
-    if(state === 'intro'){ closeIntro(); return; }
-
     // Dev Cheats: First press 1-5 for Night, then 1-3 for Floor
     if (!cheatDayBuffer && e.key >= '1' && e.key <= '5') {
         cheatDayBuffer = parseInt(e.key);
@@ -573,10 +571,9 @@
         cheatDayBuffer = null;
     }
 
-    // Restored playing check
+    // Stop reading movement keys if not actively playing
     if(state !== 'playing') return;
-
-    if(state !== 'playing') return;
+    
     switch(e.code){
       case 'ArrowLeft': case 'KeyA': keys.left = true; break;
       case 'ArrowRight': case 'KeyD': keys.right = true; break;
