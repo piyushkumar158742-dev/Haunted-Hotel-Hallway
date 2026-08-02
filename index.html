@@ -654,7 +654,7 @@
   /* ---------------------------------------------------------- */
   /* update logic                                               */
   /* ---------------------------------------------------------- */
-  function update(dt){
+function update(dt){
     // Movement Physics (No Jump)
     if(keys.left && !keys.right){ player.vx = -MOVE_SPEED; player.facing = -1; player.moving = true; }
     else if(keys.right && !keys.left){ player.vx = MOVE_SPEED; player.facing = 1; player.moving = true; }
@@ -698,7 +698,7 @@
       return;
     }
 
-    // Shadow Figure logic (Walks slightly towards player if in range)
+    // Shadow Figure logic
     if(level.shadowEntity && level.shadowEntity.active){
       const dist = Math.abs(player.x - level.shadowEntity.x);
       let aggroDist = 200 + (level.creepFactor * 100);
@@ -719,11 +719,6 @@
     }
     flashAlpha *= Math.pow(0.85, dt);
   }
-
-  /* ---------------------------------------------------------- */
-  /* rendering                                                  */
-  /* ---------------------------------------------------------- */
-  function drawScene(camX){
     // Background scaling based on creepFactor
     let dayDarkness = Math.min(60, level.creepFactor * 30);
     
