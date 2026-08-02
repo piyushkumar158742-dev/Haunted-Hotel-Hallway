@@ -843,23 +843,27 @@
     const w = 34, h = 68; 
     const topY = GROUND_Y - h;
     
+    // DOOR FRAME (Now extends 4 pixels above the door to create a top frame)
     ctx.fillStyle = '#030304';
-    ctx.fillRect(door.x - w/2 - 4, topY, w + 8, h); 
+    ctx.fillRect(door.x - w/2 - 4, topY - 4, w + 8, h + 4); 
     
+    // MAIN DOOR
     ctx.fillStyle = '#0f0d0c';
     ctx.fillRect(door.x - w/2, topY, w, h);
     
-    // Changed this from '#1a1613' to match the main door color
+    // Top detail strip (matched to door color)
     ctx.fillStyle = '#0f0d0c'; 
     ctx.fillRect(door.x - w/2, topY, w, 4); 
     
+    // Doorknob
     ctx.fillStyle = '#42382a'; 
     ctx.fillRect(door.x + w/2 - 8, topY + h/2, 3, 4); 
     
+    // Room number plaque background (sits perfectly on top of the new frame)
     ctx.fillStyle = '#000';
     ctx.fillRect(door.x - 10, topY - 12, 20, 8);
     
-    // Changed text color from '#555' to '#ccc' to make it readable
+    // Room number text (brightened for readability)
     ctx.fillStyle = '#ccc';
     ctx.font = '6px monospace';
     ctx.textAlign = 'center';
